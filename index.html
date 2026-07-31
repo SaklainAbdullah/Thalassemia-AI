@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SmartThal AI - থ্যালাসেমিয়া স্ক্রিনিং</title>
+    <title>SmartThal AI - থ্যালাসেমিয়া স্ক্রিনিং (Prototype)</title>
 
     <!-- Google Fonts for Bengali -->
     <link
@@ -63,6 +63,10 @@
           class="text-2xl font-bold text-red-600 dark:text-red-500 flex items-center gap-2"
         >
           🩸 স্মার্ট-থ্যাল এআই
+          <span
+            class="bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full border border-red-200 dark:bg-red-900/30 dark:border-red-800 ml-2"
+            >Prototype</span
+          >
         </h1>
         <button
           id="themeToggle"
@@ -73,7 +77,40 @@
       </div>
     </nav>
 
-    <main class="max-w-6xl mx-auto p-4 lg:p-8 mt-6">
+    <main class="max-w-6xl mx-auto p-4 lg:p-8 mt-4">
+      <!-- PROTOTYPE DISCLAIMER BANNER -->
+      <div
+        class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-8 rounded-r-lg shadow-sm dark:bg-yellow-900/20 dark:border-yellow-600"
+        role="alert"
+      >
+        <div class="flex items-start">
+          <div class="flex-shrink-0">
+            <svg
+              class="h-5 w-5 text-yellow-500 dark:text-yellow-400"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </div>
+          <div class="ml-3">
+            <h3 class="text-sm font-bold text-yellow-800 dark:text-yellow-300">
+              ⚠️ সতর্কীকরণ (Prototype Version)
+            </h3>
+            <div class="mt-1 text-sm text-yellow-700 dark:text-yellow-400/80">
+              এটি একটি পরীক্ষামূলক প্রোটোটাইপ অ্যাপ্লিকেশন। এর ফলাফল কোনো
+              চূড়ান্ত ডায়াগনসিস নয় এবং এটি কোনোভাবেই একজন নিবন্ধিত চিকিৎসকের
+              পরামর্শের বিকল্প নয়। যেকোনো স্বাস্থ্যগত সিদ্ধান্তে অবশ্যই বিশেষজ্ঞ
+              ডাক্তারের পরামর্শ নিন।
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="text-center mb-10">
         <h2 class="text-3xl font-bold mb-4">
           থ্যালাসেমিয়া ও অ্যানিমিয়া এআই স্ক্রিনিং
@@ -286,7 +323,6 @@
           });
           const text = result.data.text;
 
-          // Regex to extract values
           const extractVal = (regex) => {
             const match = text.match(regex);
             return match ? parseFloat(match[1]) : "";
@@ -323,7 +359,7 @@
         }
       });
 
-      // --- Clinical Triage Logic (AI Equivalent) ---
+      // --- Clinical Triage Logic ---
       const analyzeBtn = document.getElementById("analyzeBtn");
 
       analyzeBtn.addEventListener("click", () => {
@@ -338,12 +374,10 @@
           return;
         }
 
-        // Calculate Indices
         const mentzer = mcv / rbc;
         const greenKing = (Math.pow(mcv, 2) * rdw) / (hb * 100);
         const srivastava = mch / rbc;
 
-        // Simple Rule-Based Scoring (mimicking the AI)
         let bttScore = 0;
         let idaScore = 0;
 
@@ -354,10 +388,8 @@
         if (srivastava < 3.8) bttScore += 1;
         else idaScore += 1;
 
-        // Logic for normal profile
         const isNormal = hb > 11.5 && mcv >= 80 && mcv <= 100;
 
-        // Update UI
         document.getElementById("placeholder").classList.add("hidden");
         document.getElementById("resultBox").classList.remove("hidden");
 
@@ -367,7 +399,6 @@
         const riskProb = document.getElementById("riskProb");
         const recList = document.getElementById("recommendations");
 
-        // Format Math Output
         document.getElementById("mathIndices").innerHTML =
           `Mentzer: <b>${mentzer.toFixed(2)}</b> | Green-King: <b>${greenKing.toFixed(2)}</b> | Srivastava: <b>${srivastava.toFixed(2)}</b>`;
 
