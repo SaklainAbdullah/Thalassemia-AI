@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="bn" class="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SmartThal AI - থ্যালাসেমিয়া স্ক্রিনিং</title>
+
+    <!-- Google Fonts for Bengali -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            fontFamily: {
+              bengali: ['"Noto Sans Bengali"', "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
+
+    <!-- Tesseract.js for OCR -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+    <style>
+      body {
+        font-family: "Noto Sans Bengali", sans-serif;
+      }
+      .loader {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #ef4444;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        animation: spin 1s linear infinite;
+        display: inline-block;
+        vertical-align: middle;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body
+    class="bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-300"
+  >
+    <!-- Navbar -->
+    <nav class="bg-white dark:bg-gray-800 shadow-md p-4 sticky top-0 z-50">
+      <div class="max-w-6xl mx-auto flex justify-between items-center">
+        <h1
+          class="text-2xl font-bold text-red-600 dark:text-red-500 flex items-center gap-2"
+        >
+          🩸 স্মার্ট-থ্যাল এআই
+        </h1>
+        <button
+          id="themeToggle"
+          class="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+        >
+          🌙 ডার্ক মোড
+        </button>
+      </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto p-4 lg:p-8 mt-6">
+      <div class="text-center mb-10">
+        <h2 class="text-3xl font-bold mb-4">
+          থ্যালাসেমিয়া ও অ্যানিমিয়া এআই স্ক্রিনিং
+        </h2>
+        <p class="text-gray-600 dark:text-gray-400">
+          সিবিসি (CBC) রিপোর্টের ছবি আপলোড করুন অথবা ম্যানুয়ালি মানগুলো ইনপুট
+          দিন।
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Left Column: Input Section -->
+        <div
+          class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700"
+        >
+          <h3
+            class="text-xl font-semibold mb-4 border-b pb-2 dark:border-gray-700"
+          >
+            ১. রিপোর্ট ইনপুট
+          </h3>
+
+          <!-- File Upload for OCR -->
+          <div
+            class="mb-6 bg-red-50 dark:bg-gray-700 p-4 rounded-lg border border-red-100 dark:border-gray-600"
+          >
+            <label class="block text-sm font-semibold mb-2"
+              >সিবিসি রিপোর্টের ছবি দিন (অটো এক্সট্রাক্ট)</label
+            >
+            <input
+              type="file"
+              id="reportImage"
+              accept="image/*"
+              class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-red-600 file:text-white hover:file:bg-red-700 cursor-pointer mb-3"
+            />
+            <button
+              id="ocrBtn"
+              class="bg-gray-800 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-900 transition flex items-center gap-2 w-full justify-center"
+            >
+              🔍 স্ক্যান করে ডাটা বের করুন
+            </button>
+            <p
+              id="ocrStatus"
+              class="text-sm mt-3 font-medium text-blue-600 dark:text-blue-400 hidden"
+            ></p>
+          </div>
+
+          <!-- Manual Inputs -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium mb-1"
+                >Hemoglobin (Hb)</label
+              >
+              <input
+                type="number"
+                id="hb"
+                step="0.1"
+                class="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-red-500 outline-none"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">RBC Count</label>
+              <input
+                type="number"
+                id="rbc"
+                step="0.1"
+                class="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-red-500 outline-none"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">MCV</label>
+              <input
+                type="number"
+                id="mcv"
+                step="0.1"
+                class="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-red-500 outline-none"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">MCH</label>
+              <input
+                type="number"
+                id="mch"
+                step="0.1"
+                class="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-red-500 outline-none"
+              />
+            </div>
+            <div class="col-span-2">
+              <label class="block text-sm font-medium mb-1">RDW-CV</label>
+              <input
+                type="number"
+                id="rdw"
+                step="0.1"
+                class="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-red-500 outline-none"
+              />
+            </div>
+          </div>
+
+          <button
+            id="analyzeBtn"
+            class="w-full mt-6 bg-red-600 text-white font-bold py-3 rounded-xl hover:bg-red-700 shadow-lg transition transform hover:scale-[1.02]"
+          >
+            🚀 এনালাইসিস শুরু করুন
+          </button>
+        </div>
+
+        <!-- Right Column: Results Section -->
+        <div
+          class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 flex flex-col h-full"
+        >
+          <h3
+            class="text-xl font-semibold mb-4 border-b pb-2 dark:border-gray-700"
+          >
+            ২. এআই ফলাফল ও পরামর্শ
+          </h3>
+
+          <!-- Initial Placeholder -->
+          <div
+            id="placeholder"
+            class="flex-grow flex flex-col items-center justify-center text-gray-400"
+          >
+            <svg
+              class="w-16 h-16 mb-4 opacity-50"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+              ></path>
+            </svg>
+            <p>রিপোর্টের ডাটা দিয়ে এনালাইসিস বাটনে ক্লিক করুন</p>
+          </div>
+
+          <!-- Results Output (Hidden initially) -->
+          <div id="resultBox" class="hidden flex-grow">
+            <!-- Badge -->
+            <div
+              id="riskBadge"
+              class="p-5 rounded-xl text-center border-2 mb-6"
+            >
+              <h2 id="riskTitle" class="text-2xl font-bold mb-1"></h2>
+              <h3 id="riskSubtitle" class="text-lg font-semibold"></h3>
+              <p id="riskProb" class="mt-2 text-sm font-bold"></p>
+            </div>
+
+            <!-- Doctors & Treatment -->
+            <div
+              class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-800 mb-6"
+            >
+              <h4
+                class="font-bold text-blue-800 dark:text-blue-300 mb-2 flex items-center gap-2"
+              >
+                🩺 পরবর্তী করণীয় ও চিকিৎসক:
+              </h4>
+              <ul
+                id="recommendations"
+                class="list-disc ml-5 text-sm space-y-2 dark:text-gray-300"
+              ></ul>
+            </div>
+
+            <!-- Math Indices -->
+            <div
+              class="text-xs bg-gray-50 dark:bg-gray-700 p-3 rounded-lg text-gray-500 dark:text-gray-400"
+            >
+              <p class="font-semibold mb-1">গাণিতিক সূচক:</p>
+              <span id="mathIndices"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- JavaScript Logic -->
+    <script>
+      // --- Dark Mode Logic ---
+      const themeToggle = document.getElementById("themeToggle");
+      const html = document.documentElement;
+
+      themeToggle.addEventListener("click", () => {
+        html.classList.toggle("dark");
+        if (html.classList.contains("dark")) {
+          themeToggle.innerText = "☀️ লাইট মোড";
+        } else {
+          themeToggle.innerText = "🌙 ডার্ক মোড";
+        }
+      });
+
+      // --- Tesseract.js OCR Logic ---
+      const ocrBtn = document.getElementById("ocrBtn");
+      const imageInput = document.getElementById("reportImage");
+      const ocrStatus = document.getElementById("ocrStatus");
+
+      ocrBtn.addEventListener("click", async () => {
+        if (!imageInput.files[0]) {
+          alert("দয়া করে আগে একটি ছবি সিলেক্ট করুন!");
+          return;
+        }
+
+        ocrBtn.innerHTML = '<span class="loader"></span> স্ক্যান হচ্ছে...';
+        ocrBtn.disabled = true;
+        ocrStatus.classList.remove("hidden");
+        ocrStatus.innerText = "ছবি প্রসেস করা হচ্ছে, কিছুক্ষণ অপেক্ষা করুন...";
+
+        try {
+          const result = await Tesseract.recognize(imageInput.files[0], "eng", {
+            logger: (m) => console.log(m),
+          });
+          const text = result.data.text;
+
+          // Regex to extract values
+          const extractVal = (regex) => {
+            const match = text.match(regex);
+            return match ? parseFloat(match[1]) : "";
+          };
+
+          document.getElementById("hb").value = extractVal(
+            /(?:Hb|Hemoglobin|HGB).*?(\d{1,2}\.\d{1,2})/i,
+          );
+          document.getElementById("rbc").value = extractVal(
+            /(?:RBC|Red Blood Cell).*?(\d{1,2}\.\d{1,2})/i,
+          );
+          document.getElementById("mcv").value = extractVal(
+            /(?:MCV).*?(\d{2,3}\.\d{1,2})/i,
+          );
+          document.getElementById("mch").value = extractVal(
+            /(?:MCH)(?!C).*?(\d{2}\.\d{1,2})/i,
+          );
+          document.getElementById("rdw").value = extractVal(
+            /(?:RDW).*?(\d{2}\.\d{1,2})/i,
+          );
+
+          ocrStatus.innerText =
+            "✅ ডাটা সফলভাবে এক্সট্রাক্ট হয়েছে! মানগুলো মিলিয়ে নিন।";
+          ocrStatus.className =
+            "text-sm mt-3 font-medium text-green-600 dark:text-green-400";
+        } catch (error) {
+          ocrStatus.innerText =
+            "❌ ছবি থেকে ডাটা পড়তে সমস্যা হয়েছে। ম্যানুয়ালি ইনপুট দিন।";
+          ocrStatus.className =
+            "text-sm mt-3 font-medium text-red-600 dark:text-red-400";
+        } finally {
+          ocrBtn.innerHTML = "🔍 স্ক্যান করে ডাটা বের করুন";
+          ocrBtn.disabled = false;
+        }
+      });
+
+      // --- Clinical Triage Logic (AI Equivalent) ---
+      const analyzeBtn = document.getElementById("analyzeBtn");
+
+      analyzeBtn.addEventListener("click", () => {
+        const hb = parseFloat(document.getElementById("hb").value);
+        const rbc = parseFloat(document.getElementById("rbc").value);
+        const mcv = parseFloat(document.getElementById("mcv").value);
+        const mch = parseFloat(document.getElementById("mch").value);
+        const rdw = parseFloat(document.getElementById("rdw").value);
+
+        if (!hb || !rbc || !mcv || !mch || !rdw) {
+          alert("দয়া করে সবগুলো ঘরের মান সঠিকভাবে পূরণ করুন।");
+          return;
+        }
+
+        // Calculate Indices
+        const mentzer = mcv / rbc;
+        const greenKing = (Math.pow(mcv, 2) * rdw) / (hb * 100);
+        const srivastava = mch / rbc;
+
+        // Simple Rule-Based Scoring (mimicking the AI)
+        let bttScore = 0;
+        let idaScore = 0;
+
+        if (mentzer < 13) bttScore += 1;
+        else idaScore += 1;
+        if (greenKing < 65) bttScore += 1;
+        else idaScore += 1;
+        if (srivastava < 3.8) bttScore += 1;
+        else idaScore += 1;
+
+        // Logic for normal profile
+        const isNormal = hb > 11.5 && mcv >= 80 && mcv <= 100;
+
+        // Update UI
+        document.getElementById("placeholder").classList.add("hidden");
+        document.getElementById("resultBox").classList.remove("hidden");
+
+        const riskBadge = document.getElementById("riskBadge");
+        const riskTitle = document.getElementById("riskTitle");
+        const riskSubtitle = document.getElementById("riskSubtitle");
+        const riskProb = document.getElementById("riskProb");
+        const recList = document.getElementById("recommendations");
+
+        // Format Math Output
+        document.getElementById("mathIndices").innerHTML =
+          `Mentzer: <b>${mentzer.toFixed(2)}</b> | Green-King: <b>${greenKing.toFixed(2)}</b> | Srivastava: <b>${srivastava.toFixed(2)}</b>`;
+
+        if (isNormal) {
+          riskBadge.className =
+            "p-5 rounded-xl text-center border-2 mb-6 bg-green-50 border-green-300 dark:bg-green-900/30 dark:border-green-800 text-green-800 dark:text-green-300";
+          riskTitle.innerText = "🟢 কম ঝুঁকি (Normal Profile)";
+          riskSubtitle.innerText = "সিবিসি রিপোর্ট স্বাভাবিক বলে মনে হচ্ছে।";
+          riskProb.innerText = "Probability: 95% Normal";
+
+          recList.innerHTML = `
+                    <li>আপনার রক্তকণিকার আকার ও হিমোগ্লোবিন স্বাভাবিক মাত্রায় আছে।</li>
+                    <li>সাধারণ মেডিসিন বিশেষজ্ঞ (General Physician) দেখাতে পারেন যদি শারীরিক দুর্বলতা থাকে।</li>
+                    <li>পুষ্টিকর খাবার গ্রহণ অব্যাহত রাখুন।</li>`;
+        } else if (bttScore > idaScore) {
+          let prob = (bttScore / 3) * 100;
+          riskBadge.className =
+            "p-5 rounded-xl text-center border-2 mb-6 bg-red-50 border-red-300 dark:bg-red-900/30 dark:border-red-800 text-red-800 dark:text-red-300";
+          riskTitle.innerText = "🔴 উচ্চ ঝুঁকি (High Risk)";
+          riskSubtitle.innerText =
+            "বিটা-থ্যালাসেমিয়া ট্রেইট (BTT) হওয়ার সম্ভাবনা রয়েছে।";
+          riskProb.innerText = `AI Probability (Rule-based): ${prob.toFixed(1)}%`;
+
+          recList.innerHTML = `
+                    <li><b>কাকে দেখাবেন:</b> একজন হেমাটোলজিস্ট (রক্তরোগ বিশেষজ্ঞ) বা অভিজ্ঞ মেডিসিন স্পেশালিস্ট।</li>
+                    <li><b>জরুরি টেস্ট:</b> নিশ্চিত হওয়ার জন্য <b>Hb Electrophoresis</b> বা <b>HPLC</b> টেস্ট করান।</li>
+                    <li><b>সতর্কতা:</b> ডাক্তারের পরামর্শ ছাড়া আয়রন ট্যাবলেট খাবেন না। থ্যালাসেমিয়ায় আয়রন শরীরে জমে ক্ষতি করতে পারে।</li>
+                    <li>বিয়ের আগে আপনার সঙ্গীর থ্যালাসেমিয়া স্ট্যাটাস চেক করে নেওয়া অত্যন্ত জরুরি।</li>`;
+        } else {
+          let prob = (idaScore / 3) * 100;
+          riskBadge.className =
+            "p-5 rounded-xl text-center border-2 mb-6 bg-yellow-50 border-yellow-400 dark:bg-yellow-900/30 dark:border-yellow-700 text-yellow-800 dark:text-yellow-400";
+          riskTitle.innerText = "🟡 মাঝারি ঝুঁকি (Moderate Risk)";
+          riskSubtitle.innerText =
+            "আয়রন ঘাটতিজনিত রক্তস্বল্পতা (IDA) হওয়ার সম্ভাবনা বেশি।";
+          riskProb.innerText = `AI Probability (Rule-based): ${prob.toFixed(1)}%`;
+
+          recList.innerHTML = `
+                    <li><b>কাকে দেখাবেন:</b> একজন ইন্টারনাল মেডিসিন বিশেষজ্ঞ বা গাইনী বিশেষজ্ঞ (মহিলাদের ক্ষেত্রে)।</li>
+                    <li><b>পরবর্তী টেস্ট:</b> শরীরে আয়রনের মাত্রা দেখতে <b>Serum Ferritin</b> পরীক্ষা করুন।</li>
+                    <li><b>খাবার:</b> আয়রন সমৃদ্ধ খাবার খান (যেমন: কচুশাক, ডাল, লাল মাংস, কলিজা)।</li>
+                    <li>চিকিৎসকের পরামর্শ অনুযায়ী আয়রন সাপ্লিমেন্ট গ্রহণ করতে হতে পারে।</li>`;
+        }
+      });
+    </script>
+  </body>
+</html>
